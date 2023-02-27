@@ -9,7 +9,7 @@
 
 <p align="center">
 
-  <img src="assets/datid_3d.gif" />
+  <img src="assets/datid_3d_result.gif" />
 
 
 </p> 
