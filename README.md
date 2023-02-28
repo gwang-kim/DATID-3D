@@ -1,4 +1,4 @@
-# DATID-3D: Diversity-Preserved Domain Adaptation Using Text-to-Image Diffusion for 3D Generative Model (CVPR 2022) 
+# DATID-3D: Diversity-Preserved Domain Adaptation Using Text-to-Image Diffusion for 3D Generative Model (CVPR 2023) 
 
 [![arXiv](https://img.shields.io/badge/arXiv-2211.16374-red)](https://arxiv.org/abs/2211.16374) [![project_page](https://img.shields.io/badge/-project%20page-blue)](https://datid-3d.github.io/)
 
