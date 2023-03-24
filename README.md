@@ -1,6 +1,6 @@
 # DATID-3D: Diversity-Preserved Domain Adaptation Using Text-to-Image Diffusion for 3D Generative Model (CVPR 2023) 
 
-[![arXiv](https://img.shields.io/badge/arXiv-2211.16374-red)](https://arxiv.org/abs/2211.16374) [![project_page](https://img.shields.io/badge/-project%20page-blue)](https://datid-3d.github.io/)
+[![arXiv](https://img.shields.io/badge/arXiv-2211.16374-red)](https://arxiv.org/abs/2211.16374) [![project_page](https://img.shields.io/badge/-project%20page-blue)](https://gwang-kim.github.io/datid_3d/)
 
 [//]: # ()
 [//]: # ([![arXiv]&#40;https://img.shields.io/badge/paper-cvpr2022-cyan&#41;]&#40;https://openaccess.thecvf.com/content/CVPR2022/html/Kim_DiffusionCLIP_Text-Guided_Diffusion_Models_for_Robust_Image_Manipulation_CVPR_2022_paper.html&#41; [![arXiv]&#40;https://img.shields.io/badge/arXiv-2110.02711-red&#41;]&#40;https://arxiv.org/abs/2110.02711&#41;)
