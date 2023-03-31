@@ -1,0 +1,14 @@
+LICENSE.txt
+README.md
+setup.py
+nvdiffrast/__init__.py
+nvdiffrast.egg-info/PKG-INFO
+nvdiffrast.egg-info/SOURCES.txt
+nvdiffrast.egg-info/dependency_links.txt
+nvdiffrast.egg-info/requires.txt
+nvdiffrast.egg-info/top_level.txt
+nvdiffrast/tensorflow/__init__.py
+nvdiffrast/tensorflow/ops.py
+nvdiffrast/tensorflow/plugin_loader.py
+nvdiffrast/torch/__init__.py
+nvdiffrast/torch/ops.py

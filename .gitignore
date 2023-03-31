@@ -1,0 +1,10 @@
+.DS_Store
+.ipynb_checkpoints
+*.pyc
+cache*
+*.pkl
+*.ply
+
+# evaluation:
+*.mp4
+
