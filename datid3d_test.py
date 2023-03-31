@@ -124,7 +124,7 @@ if args.mode == 'manip':
     --latent_space_type=w_plus  \
     --network={generator_path} \
     --image_path={opj('..', pose_path)} \
-    --num_steps={args.num_inversion_steps}
+    --num_steps={args.num_inv_steps}
     """
     print(f"{command} \n")
     os.system(command)
