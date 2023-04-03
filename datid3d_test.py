@@ -46,7 +46,7 @@ if args.mode == 'image':
 
     os.chdir('eg3d')
     command = f"""python gen_samples.py \
-    --network {network_command} \
+    {network_command} \
     --seeds={args.seeds}  \
     --generator_type={args.generator_type} \
     --outdir={opj('..', image_path)} \

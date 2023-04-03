@@ -137,7 +137,7 @@ def TextGuidedImageTo3D(intermediate, img, model_name, num_inversion_steps, trun
           --generator_type={generator_type} \
           --outdir='test_runs' \
           --trunc={truncation} \
-          --network=finetuned/{model_ckpts[model_name]} \
+          --network finetuned/{model_ckpts[model_name]} \
           --num_inv_steps={num_inversion_steps} \
           --down_src_eg3d_from_nvidia=0 \
           --index='_{intermediate.input_img_cnt}' \
