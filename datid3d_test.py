@@ -17,6 +17,7 @@ parser.add_argument('--generator_type', default='ffhq', type=str, choices=['ffhq
 parser.add_argument('--outdir', type=str, default='test_runs')
 parser.add_argument('--trunc', type=float, default=0.7)
 parser.add_argument('--seeds', type=str, default='100-200')
+parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
 # Manipulated 3D reconstruction
 parser.add_argument('--indir', type=str, default='input_imgs')
 parser.add_argument('--num_inv_steps', type=int, default=500)
@@ -29,19 +30,6 @@ parser.add_argument('--grid', default='1x1')
 args = parser.parse_args()
 os.makedirs(args.outdir, exist_ok=True)
 print()
-
-os.chdir('eg3d')
-if args.generator_type == 'cat':
-    generator_id = 'afhqcats512-128.pkl'
-else:
-    generator_id = 'ffhqrebalanced512-128.pkl'
-generator_path = f'pretrained/{generator_id}'
-if not os.path.exists(generator_path):
-    os.makedirs(f'pretrained', exist_ok=True)
-    print("Pretrained EG3D model cannot be found. Downloading the pretrained EG3D models.")
-    os.system(f'wget -c https://api.ngc.nvidia.com/v2/models/nvidia/research/eg3d/versions/1/files/{generator_id} -O {generator_path}')
-os.chdir('..')
-
 
 
 
@@ -101,14 +89,38 @@ if args.mode == 'manip':
     os.makedirs(inversion_path, exist_ok=True)
     os.makedirs(manip_path, exist_ok=True)
 
+    os.chdir('eg3d')
+    if args.generator_type == 'cat':
+        generator_id = 'afhqcats512-128.pkl'
+    else:
+        generator_id = 'ffhqrebalanced512-128.pkl'
+    generator_path = f'pretrained/{generator_id}'
+    if not os.path.exists(generator_path):
+        os.makedirs(f'pretrained', exist_ok=True)
+        print("Pretrained EG3D model cannot be found. Downloading the pretrained EG3D models.")
+        if args.down_src_eg3d_from_nvidia == True:
+            os.system(f'wget -c https://api.ngc.nvidia.com/v2/models/nvidia/research/eg3d/versions/1/files/{generator_id} -O {generator_path}')
+        else:
+            os.system(f'wget https://huggingface.co/gwang-kim/datid3d-finetuned-eg3d-models/resolve/main/finetuned_models/nvidia_{generator_id} -O {generator_path}')
+    os.chdir('..')
+
     ## Align images and Pose extraction
     os.chdir('pose_estimation')
     if not os.path.exists('checkpoints/pretrained/epoch_20.pth') or not os.path.exists('BFM'):
         print(f"BFM and pretrained DeepFaceRecon3D model cannot be found. Downloading the pretrained pose estimation model and BFM files, put epoch_20.pth in ./pose_estimation/checkpoints/pretrained/ and put unzip BFM.zip in ./pose_estimation/.")
-        from gdown import download as drive_download
-        drive_download(f'https://drive.google.com/uc?id=1mdqkEUepHZROeOj99pXogAPJPqzBDN2G', './BFM.zip', quiet=False)
-        os.system('unzip BFM.zip')
-        drive_download(f'https://drive.google.com/uc?id=1zawY7jYDJlUGnSAXn1pgIHgIvJpiSmj5', './checkpoints/pretrained/epoch_20.pth', quiet=False)
+
+        try:
+            from gdown import download as drive_download
+            drive_download(f'https://drive.google.com/uc?id=1mdqkEUepHZROeOj99pXogAPJPqzBDN2G', './BFM.zip', quiet=False)
+            os.system('unzip BFM.zip')
+            drive_download(f'https://drive.google.com/uc?id=1zawY7jYDJlUGnSAXn1pgIHgIvJpiSmj5', './checkpoints/pretrained/epoch_20.pth', quiet=False)
+        except:
+            os.system("pip install -U --no-cache-dir gdown --pre")
+            from gdown import download as drive_download
+            drive_download(f'https://drive.google.com/uc?id=1mdqkEUepHZROeOj99pXogAPJPqzBDN2G', './BFM.zip', quiet=False)
+            os.system('unzip BFM.zip')
+            drive_download(f'https://drive.google.com/uc?id=1zawY7jYDJlUGnSAXn1pgIHgIvJpiSmj5', './checkpoints/pretrained/epoch_20.pth', quiet=False)
+
         print()
     command =  f"""python extract_pose.py 0 \
     {opj('..', input_path)} {opj('..', align_path)} {opj('..', pose_path)}

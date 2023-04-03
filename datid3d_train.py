@@ -7,7 +7,7 @@ parser = argparse.ArgumentParser()
 # For all
 parser.add_argument('--mode', type=str, required=True, choices=['pdg', 'ft', 'both'],
                     help="pdg: Pose-aware dataset generation, ft: Fine-tuning 3D generative models, both: Doing both")
-
+parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
 # Pose-aware dataset generation
 parser.add_argument('--pdg_prompt', type=str, required=True)
 parser.add_argument('--pdg_generator_type', default='ffhq', type=str, choices=['ffhq', 'cat'])  # ffhq, cat
@@ -17,7 +17,7 @@ parser.add_argument('--pdg_num_images', default=1000, type=int)
 parser.add_argument('--pdg_sd_model_id', default='stabilityai/stable-diffusion-2-1-base', type=str)
 parser.add_argument('--pdg_num_inference_steps', default=50, type=int)
 parser.add_argument('--pdg_name_tag', default='', type=str)
-
+parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
 # Fine-tuning 3D generative models
 parser.add_argument('--ft_generator_type', default='same', help="None: The same type as pdg_generator_type", type=str, choices=['ffhq', 'cat', 'same'])
 parser.add_argument('--ft_kimg', default=200, type=int)
@@ -45,7 +45,10 @@ if args.mode in ['pdg', 'both']:
     if not os.path.exists(pdg_generator_path):
         os.makedirs(f'pretrained', exist_ok=True)
         print("Pretrained EG3D model cannot be found. Downloading the pretrained EG3D models.")
-        os.system(f'wget -c https://api.ngc.nvidia.com/v2/models/nvidia/research/eg3d/versions/1/files/{pdg_generator_id} -O {pdg_generator_path}')
+        if args.down_src_eg3d_from_nvidia == True:
+            os.system(f'wget -c https://api.ngc.nvidia.com/v2/models/nvidia/research/eg3d/versions/1/files/{pdg_generator_id} -O {pdg_generator_path}')
+        else:
+            os.system(f'wget https://huggingface.co/gwang-kim/datid3d-finetuned-eg3d-models/resolve/main/finetuned_models/nvidia_{pdg_generator_id} -O {pdg_generator_path}')
     command = f"""python datid3d_data_gen.py  \
    --prompt="{args.pdg_prompt}" \
    --data_type={args.pdg_generator_type} \
@@ -79,7 +82,10 @@ if args.mode in ['ft', 'both']:
     if not os.path.exists(ft_generator_path):
         os.makedirs(f'pretrained', exist_ok=True)
         print("Pretrained EG3D model cannot be found. Downloading the pretrained EG3D models.")
-        os.system(f'wget -c https://api.ngc.nvidia.com/v2/models/nvidia/research/eg3d/versions/1/files/{ft_generator_id} -O {ft_generator_path}')
+        if args.down_src_eg3d_from_nvidia == True:
+            os.system(f'wget -c https://api.ngc.nvidia.com/v2/models/nvidia/research/eg3d/versions/1/files/{ft_generator_id} -O {ft_generator_path}')
+        else:
+            os.system(f'wget https://huggingface.co/gwang-kim/datid3d-finetuned-eg3d-models/resolve/main/finetuned_models/nvidia_{ft_generator_id} -O {ft_generator_path}')
 
     dataset_id = f'data_{args.pdg_generator_type}_{args.pdg_prompt.replace(" ", "_")}{args.pdg_name_tag}'
     dataset_path = f'./exp_data/{dataset_id}/{dataset_id}.zip'

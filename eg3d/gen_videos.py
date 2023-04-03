@@ -321,17 +321,14 @@ def generate_images(
     else:
         NotImplementedError()
 
-    with dnnlib.util.open_url(network_pkl_tmp) as f:
-        G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
-
     if model_is_state_dict:
+        with dnnlib.util.open_url(network_pkl_tmp) as f:
+            G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
         ckpt = torch.load(network)
         G.load_state_dict(ckpt, strict=False)
     else:
         with dnnlib.util.open_url(network) as f:
-            G_tmp = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
-
-        G.load_state_dict(G_tmp.state_dict(), strict=False)
+            G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
 
     G.rendering_kwargs['depth_resolution'] = int(G.rendering_kwargs['depth_resolution'] * sampling_multiplier)
     G.rendering_kwargs['depth_resolution_importance'] = int(G.rendering_kwargs['depth_resolution_importance'] * sampling_multiplier)
