@@ -102,7 +102,7 @@ def gen_interp_video(G, w_given, mp4: str, seeds, shuffle_seed=None, w_frames=60
             ws = ws.repeat([1, G.backbone.mapping.num_ws, 1])
     else:
         ws = G.mapping(z=zs, c=c, truncation_psi=psi, truncation_cutoff=truncation_cutoff)
-    _ = G.synthesis(ws[:1], c[:1]) # warm up
+    # _ = G.synthesis(ws[:1], c[:1]) # warm up
     ws = ws.reshape(grid_h, grid_w, num_keyframes, *ws.shape[1:])
 
     # Interpolation.
@@ -249,7 +249,7 @@ def parse_tuple(s: Union[str, Tuple[int,int]]) -> Tuple[int, int]:
 #----------------------------------------------------------------------------
 
 @click.command()
-@click.option('--network', help='Network path', required=True)
+@click.option('--network', help='Network path',multiple=True, required=True)
 @click.option('--w_pth', help='latent path')
 @click.option('--generator_type', help='Generator type', type=click.Choice(['ffhq', 'cat']), required=False, metavar='STR', default='ffhq', show_default=True)
 @click.option('--model_is_state_dict', type=bool, default=False)
@@ -267,7 +267,7 @@ def parse_tuple(s: Union[str, Tuple[int,int]]) -> Tuple[int, int]:
 @click.option('--shapes', type=bool, help='Gen shapes for shape interpolation', default=False, show_default=True)
 
 def generate_images(
-    network: str,
+    network: List[str],
     w_pth: str,
     seeds: List[int],
     shuffle_seed: Optional[int],
@@ -284,34 +284,10 @@ def generate_images(
     shapes: bool,
     model_is_state_dict: bool,
 ):
-    """Render a latent vector interpolation video.
-
-    Examples:
-
-    \b
-    # Render a 4x2 grid of interpolations for seeds 0 through 31.
-    python gen_video.py --output=lerp.mp4 --trunc=1 --seeds=0-31 --grid=4x2 \\
-        --network=https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-r-afhqv2-512x512.pkl
-
-    Animation length and seed keyframes:
-
-    The animation length is either determined based on the --seeds value or explicitly
-    specified using the --num-keyframes option.
-
-    When num keyframes is specified with --num-keyframes, the output video length
-    will be 'num_keyframes*w_frames' frames.
-
-    If --num-keyframes is not specified, the number of seeds given with
-    --seeds must be divisible by grid size W*H (--grid).  In this case the
-    output video length will be '# seeds/(w*h)*w_frames' frames.
-    """
 
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
-    dir_label = network.split('/')[-2] + '___' + network.split('/')[-1]
-    output = os.path.join(outdir, dir_label)
 
-    print('Loading networks from "%s"...' % network)
     device = torch.device('cuda')
 
     if generator_type == 'ffhq':
@@ -321,24 +297,33 @@ def generate_images(
     else:
         NotImplementedError()
 
-    if model_is_state_dict:
-        with dnnlib.util.open_url(network_pkl_tmp) as f:
-            G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
-        ckpt = torch.load(network)
-        G.load_state_dict(ckpt, strict=False)
-    else:
-        with dnnlib.util.open_url(network) as f:
-            G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
+    G_list = []
+    outputs = []
+    for network_path in network:
+        print('Loading networks from "%s"...' % network_path)
+        dir_label = network_path.split('/')[-2] + '___' + network_path.split('/')[-1]
+        output = os.path.join(outdir, dir_label)
+        outputs.append(output)
+        if model_is_state_dict:
+            with dnnlib.util.open_url(network_pkl_tmp) as f:
+                G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
+            ckpt = torch.load(network_path)
+            G.load_state_dict(ckpt, strict=False)
+        else:
+            with dnnlib.util.open_url(network_path) as f:
+                G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
 
-    G.rendering_kwargs['depth_resolution'] = int(G.rendering_kwargs['depth_resolution'] * sampling_multiplier)
-    G.rendering_kwargs['depth_resolution_importance'] = int(G.rendering_kwargs['depth_resolution_importance'] * sampling_multiplier)
+        G.rendering_kwargs['depth_resolution'] = int(G.rendering_kwargs['depth_resolution'] * sampling_multiplier)
+        G.rendering_kwargs['depth_resolution_importance'] = int(G.rendering_kwargs['depth_resolution_importance'] * sampling_multiplier)
 
-    if generator_type == 'cat':
-        G.rendering_kwargs['avg_camera_pivot'] = [0, 0, -0.06]
-    elif generator_type == 'ffhq':
-        G.rendering_kwargs['avg_camera_pivot'] = [0, 0, 0.2]
+        if generator_type == 'cat':
+            G.rendering_kwargs['avg_camera_pivot'] = [0, 0, -0.06]
+        elif generator_type == 'ffhq':
+            G.rendering_kwargs['avg_camera_pivot'] = [0, 0, 0.2]
 
-    if nrr is not None: G.neural_rendering_resolution = nrr
+        if nrr is not None: G.neural_rendering_resolution = nrr
+        G_list.append(G)
+
 
     if truncation_cutoff == 0:
         truncation_psi = 1.0 # truncation cutoff of 0 means no truncation anyways
@@ -356,24 +341,26 @@ def generate_images(
         else:
             seed_idx += f'{seed}'
 
-    if w_pth is not None:
-        grid = (1, 1)
-        w_given =  torch.load(w_pth).cuda()
-        w_given_id = os.path.split(w_pth)[-1].split('.')[-2]
-        output = output + f'__{w_given_id}.mp4'
-        gen_interp_video(G=G, w_given=w_given, mp4=output, bitrate='10M', grid_dims=grid, num_keyframes=num_keyframes,
-                         w_frames=w_frames,
-                         seeds=seeds, shuffle_seed=shuffle_seed, psi=truncation_psi,
-                         truncation_cutoff=truncation_cutoff, generator_type=generator_type, image_mode=image_mode,
-                         gen_shapes=shapes)
 
-    else:
-        output = output + f'__{seed_idx}.mp4'
-        gen_interp_video(G=G, w_given=None, mp4=output, bitrate='10M', grid_dims=grid, num_keyframes=num_keyframes,
-                         w_frames=w_frames,
-                         seeds=seeds, shuffle_seed=shuffle_seed, psi=truncation_psi,
-                         truncation_cutoff=truncation_cutoff, generator_type=generator_type, image_mode=image_mode,
-                         gen_shapes=shapes)
+    for G, output in zip(G_list, outputs):
+        if w_pth is not None:
+            grid = (1, 1)
+            w_given =  torch.load(w_pth).cuda()
+            w_given_id = os.path.split(w_pth)[-1].split('.')[-2]
+            output = output + f'__{w_given_id}.mp4'
+            gen_interp_video(G=G, w_given=w_given, mp4=output, bitrate='10M', grid_dims=grid, num_keyframes=num_keyframes,
+                             w_frames=w_frames,
+                             seeds=seeds, shuffle_seed=shuffle_seed, psi=truncation_psi,
+                             truncation_cutoff=truncation_cutoff, generator_type=generator_type, image_mode=image_mode,
+                             gen_shapes=shapes)
+
+        else:
+            output = output + f'__{seed_idx}.mp4'
+            gen_interp_video(G=G, w_given=None, mp4=output, bitrate='10M', grid_dims=grid, num_keyframes=num_keyframes,
+                             w_frames=w_frames,
+                             seeds=seeds, shuffle_seed=shuffle_seed, psi=truncation_psi,
+                             truncation_cutoff=truncation_cutoff, generator_type=generator_type, image_mode=image_mode,
+                             gen_shapes=shapes)
 
 
 #----------------------------------------------------------------------------

@@ -12,15 +12,16 @@ parser.add_argument('--mode', type=str, required=True, choices=['image', 'video'
                          "video: Sample pose-controlled videos, "
                          "manip: Manipulated 3D reconstruction from images, "
                          "manip_from_inv: Manipulated 3D reconstruction from inverted latent")
-parser.add_argument('--network', type=str, required=True)
+parser.add_argument('--network', type=str, nargs='+', required=True)
 parser.add_argument('--generator_type', default='ffhq', type=str, choices=['ffhq', 'cat'])  # ffhq, cat
 parser.add_argument('--outdir', type=str, default='test_runs')
 parser.add_argument('--trunc', type=float, default=0.7)
 parser.add_argument('--seeds', type=str, default='100-200')
 parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
+parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
 # Manipulated 3D reconstruction
 parser.add_argument('--indir', type=str, default='input_imgs')
-parser.add_argument('--num_inv_steps', type=int, default=500)
+parser.add_argument('--index', type=str, default='')
 # Sample images
 parser.add_argument('--shape', default=True)
 # Sample pose-controlled videos
@@ -32,15 +33,20 @@ os.makedirs(args.outdir, exist_ok=True)
 print()
 
 
+network_command = ''
+for network_path in args.network:
+    network_command += f"--network {opj('..', network_path)} "
+
+
 
 ### Sample images
 if args.mode == 'image':
-    image_path = opj(args.outdir, 'image')
+    image_path = opj(args.outdir, f'image{args.index}')
     os.makedirs(image_path, exist_ok=True)
 
     os.chdir('eg3d')
     command = f"""python gen_samples.py \
-    --network={opj('..', args.network)} \
+    --network {network_command} \
     --seeds={args.seeds}  \
     --generator_type={args.generator_type} \
     --outdir={opj('..', image_path)} \
@@ -57,12 +63,12 @@ if args.mode == 'image':
 
 ### Sample pose-controlled videos
 if args.mode == 'video':
-    video_path = opj(args.outdir, 'video')
+    video_path = opj(args.outdir, f'video{args.index}')
     os.makedirs(video_path, exist_ok=True)
 
     os.chdir('eg3d')
     command = f"""python gen_videos.py \
-    --network={opj('..', args.network)} \
+    {network_command} \
     --seeds={args.seeds} \
     --generator_type={args.generator_type} \
     --outdir={opj('..', video_path)} \
@@ -78,12 +84,12 @@ if args.mode == 'video':
 ### Manipulated 3D reconstruction from images
 if args.mode == 'manip':
     input_path = opj(args.indir)
-    align_path = opj(args.outdir, 'manip_3D_recon', '1_align_result')
-    pose_path = opj(args.outdir, 'manip_3D_recon', '2_pose_result')
-    inversion_path = opj(args.outdir, 'manip_3D_recon', '3_inversion_result')
-    manip_path = opj(args.outdir, 'manip_3D_recon', '4_manip_result')
+    align_path = opj(args.outdir, f'manip_3D_recon{args.index}', '1_align_result')
+    pose_path = opj(args.outdir, f'manip_3D_recon{args.index}', '2_pose_result')
+    inversion_path = opj(args.outdir, f'manip_3D_recon{args.index}', '3_inversion_result')
+    manip_path = opj(args.outdir, f'manip_3D_recon{args.index}', '4_manip_result')
 
-    os.makedirs(opj(args.outdir, 'manip_3D_recon'), exist_ok=True)
+    os.makedirs(opj(args.outdir, f'manip_3D_recon{args.index}'), exist_ok=True)
     os.makedirs(align_path, exist_ok=True)
     os.makedirs(pose_path, exist_ok=True)
     os.makedirs(inversion_path, exist_ok=True)
@@ -152,7 +158,7 @@ if args.mode == 'manip':
         print(f"{w_pth} \n")
 
         command = f"""python gen_samples.py \
-        --network={opj('..', args.network)} \
+        {network_command} \
         --w_pth={w_pth} \
         --seeds='100-200' \
         --generator_type={args.generator_type} \
@@ -164,7 +170,7 @@ if args.mode == 'manip':
         os.system(command)
 
         command = f"""python gen_videos.py \
-        --network={opj('..', args.network)} \
+         {network_command} \
         --w_pth={w_pth} \
         --seeds='100-200' \
         --generator_type={args.generator_type} \
@@ -184,12 +190,12 @@ if args.mode == 'manip':
 ### Manipulated 3D reconstruction from inverted latent
 if args.mode == 'manip_from_inv':
     input_path = opj(args.indir)
-    align_path = opj(args.outdir, 'manip_3D_recon', '1_align_result')
-    pose_path = opj(args.outdir, 'manip_3D_recon', '2_pose_result')
-    inversion_path = opj(args.outdir, 'manip_3D_recon', '3_inversion_result')
-    manip_path = opj(args.outdir, 'manip_3D_recon', '4_manip_result')
+    align_path = opj(args.outdir, f'manip_3D_recon{args.index}', '1_align_result')
+    pose_path = opj(args.outdir, f'manip_3D_recon{args.index}', '2_pose_result')
+    inversion_path = opj(args.outdir, f'manip_3D_recon{args.index}', '3_inversion_result')
+    manip_path = opj(args.outdir, f'manip_3D_recon{args.index}', '4_manip_result')
 
-    os.makedirs(opj(args.outdir, 'manip_3D_recon'), exist_ok=True)
+    os.makedirs(opj(args.outdir, f'manip_3D_recon{args.index}'), exist_ok=True)
     os.makedirs(align_path, exist_ok=True)
     os.makedirs(pose_path, exist_ok=True)
     os.makedirs(inversion_path, exist_ok=True)
@@ -205,7 +211,7 @@ if args.mode == 'manip_from_inv':
         print(f"{w_pth} \n")
 
         command = f"""python gen_samples.py \
-        --network={opj('..', args.network)} \
+         {network_command} \
         --w_pth={w_pth} \
         --seeds='100-200' \
         --generator_type={args.generator_type} \
@@ -217,7 +223,7 @@ if args.mode == 'manip_from_inv':
         os.system(command)
 
         command = f"""python gen_videos.py \
-        --network={opj('..', args.network)} \
+         {network_command} \
         --w_pth={w_pth} \
         --seeds='100-200' \
         --generator_type={args.generator_type} \

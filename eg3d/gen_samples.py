@@ -103,7 +103,7 @@ def create_samples(N=256, voxel_origin=[0, 0, 0], cube_length=2.0):
 #----------------------------------------------------------------------------
 
 @click.command()
-@click.option('--network', help='Network path', required=True)
+@click.option('--network', help='Network path', multiple=True, required=True)
 @click.option('--w_pth', help='latent path')
 @click.option('--generator_type', help='Generator type', type=click.Choice(['ffhq', 'cat']), required=False, metavar='STR', default='ffhq', show_default=True)
 @click.option('--model_is_state_dict', type=bool, default=False)
@@ -116,7 +116,7 @@ def create_samples(N=256, voxel_origin=[0, 0, 0], cube_length=2.0):
 @click.option('--fov-deg', help='Field of View of camera in degrees', type=int, required=False, metavar='float', default=18.837, show_default=True)
 @click.option('--shape-format', help='Shape Format', type=click.Choice(['.mrc', '.ply']), default='.mrc')
 def generate_images(
-    network: str,
+    network: List[str],
     w_pth: str,
     generator_type: str,
     seeds: List[int],
@@ -133,10 +133,7 @@ def generate_images(
 
     if not os.path.exists(outdir):
         os.makedirs(outdir, exist_ok=True)
-    dir_label = network.split('/')[-2] + '___' + network.split('/')[-1]
-    output = os.path.join(outdir, dir_label)
 
-    print('Loading networks from "%s"...' % network)
     device = torch.device('cuda')
 
     if generator_type == 'ffhq':
@@ -146,22 +143,32 @@ def generate_images(
     else:
         NotImplementedError()
 
-    if model_is_state_dict:
-        with dnnlib.util.open_url(network_pkl_tmp) as f:
-            G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
-        ckpt = torch.load(network)
-        G.load_state_dict(ckpt, strict=False)
-    else:
-        with dnnlib.util.open_url(network) as f:
-            G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
+    G_list = []
+    outputs = []
+    for network_path in network:
+        print('Loading networks from "%s"...' % network_path)
+        dir_label = network_path.split('/')[-2] + '___' + network_path.split('/')[-1]
+        output = os.path.join(outdir, dir_label)
+        outputs.append(output)
+        if model_is_state_dict:
+            with dnnlib.util.open_url(network_pkl_tmp) as f:
+                G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
+            ckpt = torch.load(network_path)
+            G.load_state_dict(ckpt, strict=False)
+        else:
+            with dnnlib.util.open_url(network_path) as f:
+                G = legacy.load_network_pkl(f)['G_ema'].to(device)  # type: ignore
 
-    G.rendering_kwargs['depth_resolution'] = int(G.rendering_kwargs['depth_resolution'])
-    G.rendering_kwargs['depth_resolution_importance'] = int(G.rendering_kwargs['depth_resolution_importance'])
+        G.rendering_kwargs['depth_resolution'] = int(G.rendering_kwargs['depth_resolution'])
+        G.rendering_kwargs['depth_resolution_importance'] = int(
+            G.rendering_kwargs['depth_resolution_importance'])
 
-    if generator_type == 'cat':
-        G.rendering_kwargs['avg_camera_pivot'] = [0, 0, -0.06]
-    elif generator_type == 'ffhq':
-        G.rendering_kwargs['avg_camera_pivot'] = [0, 0, 0.2]
+        if generator_type == 'cat':
+            G.rendering_kwargs['avg_camera_pivot'] = [0, 0, -0.06]
+        elif generator_type == 'ffhq':
+            G.rendering_kwargs['avg_camera_pivot'] = [0, 0, 0.2]
+
+        G_list.append(G)
 
     if truncation_cutoff == 0:
         truncation_psi = 1.0 # truncation cutoff of 0 means no truncation anyways
@@ -182,80 +189,81 @@ def generate_images(
     print(seeds)
 
     # Generate images.
-    for seed_idx, seed in enumerate(seeds):
-        print('Generating image for seed %d (%d/%d) ...' % (seed, seed_idx, len(seeds)))
+    for G, output in zip(G_list, outputs):
+        for seed_idx, seed in enumerate(seeds):
+            print('Generating image for seed %d (%d/%d) ...' % (seed, seed_idx, len(seeds)))
 
-        z = torch.from_numpy(np.random.RandomState(seed).randn(1, G.z_dim)).to(device)
+            z = torch.from_numpy(np.random.RandomState(seed).randn(1, G.z_dim)).to(device)
 
-        imgs = []
-        angle_p = -0.2
-        for angle_y, angle_p in [(.4, angle_p), (0, angle_p), (-.4, angle_p)]:
-            cam_pivot = torch.tensor(G.rendering_kwargs.get('avg_camera_pivot', [0, 0, 0]), device=device)
-            cam_radius = G.rendering_kwargs.get('avg_camera_radius', 2.7)
-            cam2world_pose = LookAtPoseSampler.sample(np.pi/2 + angle_y, np.pi/2 + angle_p, cam_pivot, radius=cam_radius, device=device)
-            conditioning_cam2world_pose = LookAtPoseSampler.sample(np.pi/2, np.pi/2, cam_pivot, radius=cam_radius, device=device)
-            camera_params = torch.cat([cam2world_pose.reshape(-1, 16), intrinsics.reshape(-1, 9)], 1)
-            conditioning_params = torch.cat([conditioning_cam2world_pose.reshape(-1, 16), intrinsics.reshape(-1, 9)], 1)
+            imgs = []
+            angle_p = -0.2
+            for angle_y, angle_p in [(.4, angle_p), (0, angle_p), (-.4, angle_p)]:
+                cam_pivot = torch.tensor(G.rendering_kwargs.get('avg_camera_pivot', [0, 0, 0]), device=device)
+                cam_radius = G.rendering_kwargs.get('avg_camera_radius', 2.7)
+                cam2world_pose = LookAtPoseSampler.sample(np.pi/2 + angle_y, np.pi/2 + angle_p, cam_pivot, radius=cam_radius, device=device)
+                conditioning_cam2world_pose = LookAtPoseSampler.sample(np.pi/2, np.pi/2, cam_pivot, radius=cam_radius, device=device)
+                camera_params = torch.cat([cam2world_pose.reshape(-1, 16), intrinsics.reshape(-1, 9)], 1)
+                conditioning_params = torch.cat([conditioning_cam2world_pose.reshape(-1, 16), intrinsics.reshape(-1, 9)], 1)
 
-            if w_pth is not None:
-                ws = torch.load(w_pth).cuda()
-                w_given_id = os.path.split(w_pth)[-1].split('.')[-2]
-                output_img = output + f'__{w_given_id}.png'
-                output_shape = output + f'__{w_given_id}.mrc'
-            else:
-                ws = G.mapping(z, conditioning_params, truncation_psi=truncation_psi,  truncation_cutoff=truncation_cutoff)
-                output_img = output + f'__{seed_idx:05d}.png'
-                output_shape = output + f'__{seed_idx:05d}.mrc'
+                if w_pth is not None:
+                    ws = torch.load(w_pth).cuda()
+                    w_given_id = os.path.split(w_pth)[-1].split('.')[-2]
+                    output_img = output + f'__{w_given_id}.png'
+                    output_shape = output + f'__{w_given_id}.mrc'
+                else:
+                    ws = G.mapping(z, conditioning_params, truncation_psi=truncation_psi,  truncation_cutoff=truncation_cutoff)
+                    output_img = output + f'__{seed_idx:05d}.png'
+                    output_shape = output + f'__{seed_idx:05d}.mrc'
 
 
-            img = G.synthesis(ws, camera_params)['image']
+                img = G.synthesis(ws, camera_params)['image']
 
-            img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
-            imgs.append(img)
+                img = (img.permute(0, 2, 3, 1) * 127.5 + 128).clamp(0, 255).to(torch.uint8)
+                imgs.append(img)
 
-        img = torch.cat(imgs, dim=2)
+            img = torch.cat(imgs, dim=2)
 
-        PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(output_img)
+            PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(output_img)
 
-        if shapes:
-            # extract a shape.mrc with marching cubes. You can view the .mrc file using ChimeraX from UCSF.
-            max_batch=1000000
+            if shapes:
+                # extract a shape.mrc with marching cubes. You can view the .mrc file using ChimeraX from UCSF.
+                max_batch=1000000
 
-            samples, voxel_origin, voxel_size = create_samples(N=shape_res, voxel_origin=[0, 0, 0], cube_length=G.rendering_kwargs['box_warp'] * 1)#.reshape(1, -1, 3)
-            samples = samples.to(z.device)
-            sigmas = torch.zeros((samples.shape[0], samples.shape[1], 1), device=z.device)
-            transformed_ray_directions_expanded = torch.zeros((samples.shape[0], max_batch, 3), device=z.device)
-            transformed_ray_directions_expanded[..., -1] = -1
+                samples, voxel_origin, voxel_size = create_samples(N=shape_res, voxel_origin=[0, 0, 0], cube_length=G.rendering_kwargs['box_warp'] * 1)#.reshape(1, -1, 3)
+                samples = samples.to(z.device)
+                sigmas = torch.zeros((samples.shape[0], samples.shape[1], 1), device=z.device)
+                transformed_ray_directions_expanded = torch.zeros((samples.shape[0], max_batch, 3), device=z.device)
+                transformed_ray_directions_expanded[..., -1] = -1
 
-            head = 0
-            with tqdm(total = samples.shape[1]) as pbar:
-                with torch.no_grad():
-                    while head < samples.shape[1]:
-                        torch.manual_seed(0)
-                        sigma = G.sample(samples[:, head:head+max_batch], transformed_ray_directions_expanded[:, :samples.shape[1]-head], z, conditioning_params, truncation_psi=truncation_psi, truncation_cutoff=truncation_cutoff, noise_mode='const')['sigma']
-                        sigmas[:, head:head+max_batch] = sigma
-                        head += max_batch
-                        pbar.update(max_batch)
+                head = 0
+                with tqdm(total = samples.shape[1]) as pbar:
+                    with torch.no_grad():
+                        while head < samples.shape[1]:
+                            torch.manual_seed(0)
+                            sigma = G.sample(samples[:, head:head+max_batch], transformed_ray_directions_expanded[:, :samples.shape[1]-head], z, conditioning_params, truncation_psi=truncation_psi, truncation_cutoff=truncation_cutoff, noise_mode='const')['sigma']
+                            sigmas[:, head:head+max_batch] = sigma
+                            head += max_batch
+                            pbar.update(max_batch)
 
-            sigmas = sigmas.reshape((shape_res, shape_res, shape_res)).cpu().numpy()
-            sigmas = np.flip(sigmas, 0)
+                sigmas = sigmas.reshape((shape_res, shape_res, shape_res)).cpu().numpy()
+                sigmas = np.flip(sigmas, 0)
 
-            # Trim the border of the extracted cube
-            pad = int(30 * shape_res / 256)
-            pad_value = -1000
-            sigmas[:pad] = pad_value
-            sigmas[-pad:] = pad_value
-            sigmas[:, :pad] = pad_value
-            sigmas[:, -pad:] = pad_value
-            sigmas[:, :, :pad] = pad_value
-            sigmas[:, :, -pad:] = pad_value
+                # Trim the border of the extracted cube
+                pad = int(30 * shape_res / 256)
+                pad_value = -1000
+                sigmas[:pad] = pad_value
+                sigmas[-pad:] = pad_value
+                sigmas[:, :pad] = pad_value
+                sigmas[:, -pad:] = pad_value
+                sigmas[:, :, :pad] = pad_value
+                sigmas[:, :, -pad:] = pad_value
 
-            if shape_format == '.ply':
-                from shape_utils import convert_sdf_samples_to_ply
-                convert_sdf_samples_to_ply(np.transpose(sigmas, (2, 1, 0)), [0, 0, 0], 1, os.path.join(outdir, f'seed{seed:04d}.ply'), level=10)
-            elif shape_format == '.mrc': # output mrc
-                with mrcfile.new_mmap(output_shape, overwrite=True, shape=sigmas.shape, mrc_mode=2) as mrc:
-                    mrc.data[:] = sigmas
+                if shape_format == '.ply':
+                    from shape_utils import convert_sdf_samples_to_ply
+                    convert_sdf_samples_to_ply(np.transpose(sigmas, (2, 1, 0)), [0, 0, 0], 1, os.path.join(outdir, f'seed{seed:04d}.ply'), level=10)
+                elif shape_format == '.mrc': # output mrc
+                    with mrcfile.new_mmap(output_shape, overwrite=True, shape=sigmas.shape, mrc_mode=2) as mrc:
+                        mrc.data[:] = sigmas
 
 
 #----------------------------------------------------------------------------
