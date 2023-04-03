@@ -12,7 +12,7 @@
           eval_batch_nums: inf                           
                     focal: 1015.0                        
                   gpu_ids: 0                             
-               img_folder: ./../test_runs/manip_3D_recon/1_align_result/	[default: examples]
+               img_folder: ./../test_runs/manip_3D_recon_1/1_align_result/	[default: examples]
                 init_path: checkpoints/init_model/resnet50-0676ba61.pth
                   isTrain: False                         	[default: None]
                     model: facerecon                     

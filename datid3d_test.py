@@ -18,10 +18,10 @@ parser.add_argument('--outdir', type=str, default='test_runs')
 parser.add_argument('--trunc', type=float, default=0.7)
 parser.add_argument('--seeds', type=str, default='100-200')
 parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
-parser.add_argument('--down_src_eg3d_from_nvidia', default=True)
+parser.add_argument('--num_inv_steps', default=300, type=int)
 # Manipulated 3D reconstruction
 parser.add_argument('--indir', type=str, default='input_imgs')
-parser.add_argument('--index', type=str, default='')
+parser.add_argument('--name_tag', type=str, default='')
 # Sample images
 parser.add_argument('--shape', default=True)
 # Sample pose-controlled videos
@@ -41,7 +41,7 @@ for network_path in args.network:
 
 ### Sample images
 if args.mode == 'image':
-    image_path = opj(args.outdir, f'image{args.index}')
+    image_path = opj(args.outdir, f'image{args.name_tag}')
     os.makedirs(image_path, exist_ok=True)
 
     os.chdir('eg3d')
@@ -63,7 +63,7 @@ if args.mode == 'image':
 
 ### Sample pose-controlled videos
 if args.mode == 'video':
-    video_path = opj(args.outdir, f'video{args.index}')
+    video_path = opj(args.outdir, f'video{args.name_tag}')
     os.makedirs(video_path, exist_ok=True)
 
     os.chdir('eg3d')
@@ -84,12 +84,12 @@ if args.mode == 'video':
 ### Manipulated 3D reconstruction from images
 if args.mode == 'manip':
     input_path = opj(args.indir)
-    align_path = opj(args.outdir, f'manip_3D_recon{args.index}', '1_align_result')
-    pose_path = opj(args.outdir, f'manip_3D_recon{args.index}', '2_pose_result')
-    inversion_path = opj(args.outdir, f'manip_3D_recon{args.index}', '3_inversion_result')
-    manip_path = opj(args.outdir, f'manip_3D_recon{args.index}', '4_manip_result')
+    align_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '1_align_result')
+    pose_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '2_pose_result')
+    inversion_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '3_inversion_result')
+    manip_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '4_manip_result')
 
-    os.makedirs(opj(args.outdir, f'manip_3D_recon{args.index}'), exist_ok=True)
+    os.makedirs(opj(args.outdir, f'manip_3D_recon{args.name_tag}'), exist_ok=True)
     os.makedirs(align_path, exist_ok=True)
     os.makedirs(pose_path, exist_ok=True)
     os.makedirs(inversion_path, exist_ok=True)
@@ -190,12 +190,12 @@ if args.mode == 'manip':
 ### Manipulated 3D reconstruction from inverted latent
 if args.mode == 'manip_from_inv':
     input_path = opj(args.indir)
-    align_path = opj(args.outdir, f'manip_3D_recon{args.index}', '1_align_result')
-    pose_path = opj(args.outdir, f'manip_3D_recon{args.index}', '2_pose_result')
-    inversion_path = opj(args.outdir, f'manip_3D_recon{args.index}', '3_inversion_result')
-    manip_path = opj(args.outdir, f'manip_3D_recon{args.index}', '4_manip_result')
+    align_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '1_align_result')
+    pose_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '2_pose_result')
+    inversion_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '3_inversion_result')
+    manip_path = opj(args.outdir, f'manip_3D_recon{args.name_tag}', '4_manip_result')
 
-    os.makedirs(opj(args.outdir, f'manip_3D_recon{args.index}'), exist_ok=True)
+    os.makedirs(opj(args.outdir, f'manip_3D_recon{args.name_tag}'), exist_ok=True)
     os.makedirs(align_path, exist_ok=True)
     os.makedirs(pose_path, exist_ok=True)
     os.makedirs(inversion_path, exist_ok=True)

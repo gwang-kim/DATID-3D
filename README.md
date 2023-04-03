@@ -13,15 +13,8 @@
 [//]: # ([![video]&#40;https://img.shields.io/badge/video-green&#41;]&#40;https://youtu.be/YVCtaXw6fw8&#41; [![poster]&#40;https://img.shields.io/badge/poster-orange&#41;]&#40;https://drive.google.com/file/d/1QgRFIRba492dCZ6v7BcZB9zqyp91aTjL/view?usp=sharing&#41; )
 
 <p align="center">
-
-  <img src="assets/datid_3d_result.gif" />
-
-
+  <img src="assets/datid3d_result.gif"/>
 </p> 
-
-[comment]: <> (![]&#40;imgs/main1.png&#41;)
-
-[comment]: <> (![]&#40;imgs/main2.png&#41;)
 
 > **DATID-3D: Diversity-Preserved Domain Adaptation Using Text-to-Image Diffusion for 3D Generative Model**<br>
 > [Gwanghyun Kim](https://gwang-kim.github.io/), [Se Young Chun](https://icl.snu.ac.kr/pi) <br>
@@ -36,13 +29,8 @@ Text-guided domain adaptation methods have shown impressive performance on conve
 
 
 ## Recent Updates
-`2023.03.31`: Code is released. 
-
-
-
-## Demo [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1e9NSVB7x_hjz-nr4K0jO4rfTXILnNGtA?usp=sharing)
-- We provide a colab notebook for you to play with DATID-3D! Due to 12GB of the VRAM limit in Colab, we only provide the codes of inference & applications with 3D generative models fine-tuned using DATID-3D, not fine-tuning code. 
-- We will also provide a gradio app on Huggingface.
+- `2023.03.31`: Code & Colab demo are released.
+- `2023.04.03`: Gradio demo is released. 
 
 
 ## Requirements
@@ -50,7 +38,7 @@ Text-guided domain adaptation methods have shown impressive performance on conve
 * We have used Linux (Ubuntu 20.04).
 * We have used 1 NVIDIA A100 GPU for text-guided domain adaptation, and have used 1 NVIDIA A100 or RTX3090 GPU for the test using the shifted generators.     
 1&ndash;8 high-end NVIDIA GPUs. We have done all testing and development using V100, RTX3090, and A100 GPUs.
-* Python 3.8, PyTorch 1.13.0 (or later), CUDA toolkit 11.6 (or later).
+* Python 3.8, PyTorch 1.12.1 (or later), CUDA toolkit 11.6 (or later).
 * Python libraries: see [environment.yml](../environment.yml) for exact library dependencies.  You can use the following commands with Miniconda3 to create and activate your Python environment:
     ```.bash
     git clone https://github.com/gwang-kim/DATID-3D_tmp.git
@@ -60,8 +48,21 @@ Text-guided domain adaptation methods have shown impressive performance on conve
     ```
 * We use the pretrained [EG3D](https://github.com/NVlabs/eg3d) models as our pretrained 3D generative models. The prtrained EG3D models will be downloaded automatically for convinence. Or you can download the pretrained [EG3D models](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/research/models/eg3d/files), put `afhqcats512-128.pkl` and `affhqrebalanced512-128.pkl` in `~/eg3d/pretrained/`.
 
+## Demo
+### Gradio Demo
+- We provide a interactive Gradio app demo.
+```.bash
+python gradio_app.py
+```
+<p align="center">
+  <img src="assets/datid3d_gradio.gif" />
+</p> 
 
-## Fine-tuned 3D generative models
+### Colab Demo  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1e9NSVB7x_hjz-nr4K0jO4rfTXILnNGtA?usp=sharing)
+- We provide a Colab demo for you to play with DATID-3D! Due to 12GB of the VRAM limit in Colab, we only provide the codes of inference & applications with 3D generative models fine-tuned using DATID-3D, not fine-tuning code. 
+
+
+## Download Fine-tuned 3D Generative Models
 
 Fine-tuned 3D generative models using DATID-3D pipeline are stored as `*.pkl` files.
 You can download the models in [our Hugginface model pages](https://huggingface.co/gwang-kim/datid3d-finetuned-eg3d-models/tree/main/finetuned_models).
@@ -71,7 +72,7 @@ wget https://huggingface.co/gwang-kim/datid3d-finetuned-eg3d-models/resolve/main
 ```
 
 
-## Sample images, shapes and videos
+## Sample Images, Shapes and Videos
 You can sample images and shapes (as .mrc files), pose-controlled videos using the shifted 3D generative model.
 For example:
 ```.bash
@@ -112,14 +113,14 @@ To visualize a shape in ChimeraX do the following:
 1. In the `Lighting` menu in the top bar, change lighting to "Full"
 
 
-## Manipulated 3D reconstruction
+## Text-guided Manipulated 3D Reconstruction
 This includes `alignment -> pose extraction -> 3D GAN inversion -> generation of images using fine-tuned generator`.
 We use [Deep3DFaceRecon](https://github.com/sicxu/Deep3DFaceRecon_pytorch/tree/6ba3d22f84bf508f0dde002da8fff277196fef21) as the pose estimation models.
 The prtrained pose estimation will be downloaded automatically for convinence.
 Or you can download the pretrained [pose estimation model](https://drive.google.com/file/d/1zawY7jYDJlUGnSAXn1pgIHgIvJpiSmj5/view?usp=sharing) and [BFM files](https://drive.google.com/file/d/1mdqkEUepHZROeOj99pXogAPJPqzBDN2G/view?usp=sharing), put `epoch_20.pth` in `~/pose_estimation/checkpoints/pretrained/` and put unzip `BFM.zip` in `~/pose_estimation/`.
 For example:
 ```.bash
-# Manipulated 3D reconstruction from images using the shifted 3D generative model
+# Text-guided manipulated 3D reconstruction from images using the shifted 3D generative model
 
 python datid3d_test.py --mode manip \
 --indir='input_imgs' \
@@ -132,7 +133,7 @@ The results are saved to `~/test_runs/manip_3D_recon/4_manip_result`.
 
 
 
-## Text-guided domain adaptation of 3D generator
+## Text-guided Domain Adaptation of 3D Generator
 
 You can do text-guided domain adaptation of 3D generator with your own text prompt using `datid3d_train.py`. For example:
 
@@ -151,16 +152,6 @@ python datid3d_train.py \
 ```
 
 The results of each training run are saved to a newly created directory, for example `~/training_runs/00011-ffhq-data_ffhq_a_FHD_photo_of_face_of_beautiful_Elf_with_silver_hair_in_the_live_action_movie-gpus1-batch20-gamma5`. 
-
-
-## Interactive visualization
-
-Following [EG3D](https://github.com/NVlabs/eg3d), this implementation contains an interactive model visualization tool that can be used to explore various characteristics of a trained model.  To start it, run:
-```.bash
-
-python visualizer.py
-
-```
 
 
 ## Citation
