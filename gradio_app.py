@@ -107,6 +107,7 @@ def TextGuidedImageTo3D(intermediate, img, model_name, num_inversion_steps, trun
                       --down_src_eg3d_from_nvidia=False \
                       --name_tag='_{intermediate.input_img_cnt}' \
                       --shape=False"""
+            print(command)
             os.system(command)
 
         aligned_img_pth = sorted(glob(f'test_runs/manip_3D_recon_{intermediate.input_img_cnt}/2_pose_result/*.png'))[0]
@@ -140,8 +141,9 @@ def TextGuidedImageTo3D(intermediate, img, model_name, num_inversion_steps, trun
           --network finetuned/{model_ckpts[model_name]} \
           --num_inv_steps={num_inversion_steps} \
           --down_src_eg3d_from_nvidia=0 \
-          --index='_{intermediate.input_img_cnt}' \
+          --name_tag='_{intermediate.input_img_cnt}' \
           --shape=False"""
+            print(command)
             os.system(command)
 
         aligned_img_pth = sorted(glob(f'test_runs/manip_3D_recon_{intermediate.input_img_cnt}/2_pose_result/*.png'))[0]
@@ -196,6 +198,7 @@ def SampleImage(model_name, num_samples, truncation, seed):
     --trunc={truncation} \
     --network=finetuned/{model_ckpts[model_name]} \
     --shape=False"""
+    print(command)
     os.system(command)
 
     result_img_pths = sorted(glob(f'test_runs/image/*{model_ckpts[model_name]}*.png'))
@@ -235,6 +238,7 @@ def SampleVideo(model_name, grid_height, truncation, seed):
     --grid={grid_height}x{grid_height} \
     --network=finetuned/{model_ckpts[model_name]} \
     --shape=False"""
+    print(command)
     os.system(command)
 
     result_video_pth = sorted(glob(f'test_runs/video/*{model_ckpts[model_name]}*.mp4'))[0]
