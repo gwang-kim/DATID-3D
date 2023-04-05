@@ -260,7 +260,7 @@ def generate_images(
 
                 if shape_format == '.ply':
                     from shape_utils import convert_sdf_samples_to_ply
-                    convert_sdf_samples_to_ply(np.transpose(sigmas, (2, 1, 0)), [0, 0, 0], 1, os.path.join(outdir, output_shape.replace('.mrc','.ply')), level=10)
+                    convert_sdf_samples_to_ply(np.transpose(sigmas, (2, 1, 0)), [0, 0, 0], 1, output_shape.replace('.mrc','.ply'), level=10)
                 elif shape_format == '.mrc': # output mrc
                     with mrcfile.new_mmap(output_shape, overwrite=True, shape=sigmas.shape, mrc_mode=2) as mrc:
                         mrc.data[:] = sigmas
