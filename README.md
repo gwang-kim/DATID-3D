@@ -113,7 +113,8 @@ To visualize a shape in ChimeraX do the following:
 1. In the `Lighting` menu in the top bar, change lighting to "Full"
 
 
-## Text-guided Manipulated 3D Reconstruction
+## Single-shot Text-guided 2D-to-3D
+### Text-guided Manipulated 3D Reconstruction
 This includes `alignment -> pose extraction -> 3D GAN inversion -> generation of images using fine-tuned generator`.
 We use [Deep3DFaceRecon](https://github.com/sicxu/Deep3DFaceRecon_pytorch/tree/6ba3d22f84bf508f0dde002da8fff277196fef21) as the pose estimation models.
 The prtrained pose estimation will be downloaded automatically for convinence.
@@ -134,7 +135,6 @@ The results are saved to `~/test_runs/manip_3D_recon/4_manip_result`.
 
 
 ## Text-guided Domain Adaptation of 3D Generator
-
 You can do text-guided domain adaptation of 3D generator with your own text prompt using `datid3d_train.py`. For example:
 
 ```.bash
