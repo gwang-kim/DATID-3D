@@ -25,6 +25,7 @@ parser.add_argument('--name_tag', type=str, default='')
 # Sample images
 parser.add_argument('--shape', default=True)
 parser.add_argument('--shape_format',  type=str, choices=['.mrc', '.ply'], default='.mrc')
+parser.add_argument('--shape_only_first', type=bool, default=False)
 # Sample pose-controlled videos
 parser.add_argument('--grid', default='1x1')
 
@@ -53,6 +54,7 @@ if args.mode == 'image':
     --outdir={opj('..', image_path)} \
     --shapes={args.shape} \
     --shape_format={args.shape_format} \
+    --shape_only_first={args.shape_only_first} \
     --trunc={args.trunc} \
     """
     print(f"{command} \n")
@@ -167,6 +169,7 @@ if args.mode == 'manip':
         --outdir={opj('..', manip_path)} \
         --shapes={args.shape} \
         --shape_format={args.shape_format} \
+        --shape_only_first={args.shape_only_first} \
         --trunc={args.trunc} \
         """
         print(f"{command} \n")
@@ -221,6 +224,7 @@ if args.mode == 'manip_from_inv':
         --outdir={opj('..', manip_path)} \
         --shapes={args.shape} \
         --shape_format={args.shape_format} \
+        --shape_only_first={args.shape_only_first} \
         --trunc={args.trunc} \
         """
         print(f"{command} \n")
