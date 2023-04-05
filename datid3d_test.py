@@ -24,6 +24,7 @@ parser.add_argument('--indir', type=str, default='input_imgs')
 parser.add_argument('--name_tag', type=str, default='')
 # Sample images
 parser.add_argument('--shape', default=True)
+parser.add_argument('--shape_format',  type=str, choices=['.mrc', '.ply'], default='.mrc')
 # Sample pose-controlled videos
 parser.add_argument('--grid', default='1x1')
 
@@ -51,6 +52,7 @@ if args.mode == 'image':
     --generator_type={args.generator_type} \
     --outdir={opj('..', image_path)} \
     --shapes={args.shape} \
+    --shape_format={args.shape_format} \
     --trunc={args.trunc} \
     """
     print(f"{command} \n")
@@ -164,6 +166,7 @@ if args.mode == 'manip':
         --generator_type={args.generator_type} \
         --outdir={opj('..', manip_path)} \
         --shapes={args.shape} \
+        --shape_format={args.shape_format} \
         --trunc={args.trunc} \
         """
         print(f"{command} \n")
@@ -217,6 +220,7 @@ if args.mode == 'manip_from_inv':
         --generator_type={args.generator_type} \
         --outdir={opj('..', manip_path)} \
         --shapes={args.shape} \
+        --shape_format={args.shape_format} \
         --trunc={args.trunc} \
         """
         print(f"{command} \n")
