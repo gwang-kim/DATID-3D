@@ -113,6 +113,7 @@ def create_samples(N=256, voxel_origin=[0, 0, 0], cube_length=2.0):
 @click.option('--outdir', help='Where to save the output images', type=str, required=True, metavar='DIR')
 @click.option('--shapes', help='Export shapes as .mrc files viewable in ChimeraX', type=bool, required=False, metavar='BOOL', default=False, show_default=True)
 @click.option('--shape-res', help='', type=int, required=False, metavar='int', default=512, show_default=True)
+@click.option('--shape_only_first', type=bool, default=False)
 @click.option('--fov-deg', help='Field of View of camera in degrees', type=int, required=False, metavar='float', default=18.837, show_default=True)
 @click.option('--shape_format', help='Shape Format', type=click.Choice(['.mrc', '.ply']), default='.mrc')
 def generate_images(
@@ -128,6 +129,7 @@ def generate_images(
     fov_deg: float,
     shape_format: str,
     model_is_state_dict: bool,
+    shape_only_first: bool,
 ):
 
 
@@ -189,7 +191,7 @@ def generate_images(
     print(seeds)
 
     # Generate images.
-    for G, output in zip(G_list, outputs):
+    for k, (G, output) in enumerate(zip(G_list, outputs)):
         for seed_idx, seed in enumerate(seeds):
             print('Generating image for seed %d (%d/%d) ...' % (seed, seed_idx, len(seeds)))
 
@@ -224,6 +226,9 @@ def generate_images(
             img = torch.cat(imgs, dim=2)
 
             PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(output_img)
+            if shape_only_first and k != 0:
+                continue
+
 
             if shapes:
                 # extract a shape.mrc with marching cubes. You can view the .mrc file using ChimeraX from UCSF.
@@ -257,6 +262,7 @@ def generate_images(
                 sigmas[:, -pad:] = pad_value
                 sigmas[:, :, :pad] = pad_value
                 sigmas[:, :, -pad:] = pad_value
+
 
                 if shape_format == '.ply':
                     from shape_utils import convert_sdf_samples_to_ply
