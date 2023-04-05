@@ -191,7 +191,7 @@ def generate_images(
     print(seeds)
 
     # Generate images.
-    for k, (G, output) in enumerate(zip(G_list, outputs)):
+    for G, output in zip(G_list, outputs):
         for seed_idx, seed in enumerate(seeds):
             print('Generating image for seed %d (%d/%d) ...' % (seed, seed_idx, len(seeds)))
 
@@ -226,7 +226,7 @@ def generate_images(
             img = torch.cat(imgs, dim=2)
 
             PIL.Image.fromarray(img[0].cpu().numpy(), 'RGB').save(output_img)
-            if shape_only_first and k != 0:
+            if shape_only_first and seed_idx != 0:
                 continue
 
 
