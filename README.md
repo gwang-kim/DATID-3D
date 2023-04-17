@@ -158,8 +158,8 @@ The results of each training run are saved to a newly created directory, for exa
 
 ```
 @inproceedings{kim2022datid3d,
-  author = {DATID-3D: Diversity-Preserved Domain Adaptation Using Text-to-Image Diffusion for 3D Generative Model},
-  title = {Gwanghyun Kim and Se Young Chun},
+  author = {Gwanghyun Kim and Se Young Chun},
+  title = {DATID-3D: Diversity-Preserved Domain Adaptation Using Text-to-Image Diffusion for 3D Generative Model},
   booktitle = {CVPR},
   year = {2023}
 }
