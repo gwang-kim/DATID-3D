@@ -20,7 +20,7 @@
 > [Gwanghyun Kim](https://gwang-kim.github.io/), [Se Young Chun](https://icl.snu.ac.kr/pi) <br>
 > CVPR 2023 <br>
 > 
-> [gwang-kim.github.io/datid_3d](gwang-kim.github.io/datid_3d/)
+> [gwang-kim.github.io/datid_3d](https://gwang-kim.github.io/datid_3d/)
 > 
 >**Abstract**: <br>
 Recent 3D generative models have achieved remarkable performance in synthesizing high resolution photorealistic images with view consistency and detailed 3D shapes, but training them for diverse domains is challenging since it requires massive training images and their camera distribution information.  
