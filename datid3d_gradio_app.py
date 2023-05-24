@@ -278,7 +278,7 @@ if __name__ == '__main__':
                                              value="super_mario", interactive=True)
                     with gr.Accordion("Advanced Options", open=False):
                         t_truncation = gr.Slider(label="Truncation psi", minimum=0, maximum=1.0, step=0.01, randomize=False, value=0.8)
-                        t_num_inversion_steps = gr.Slider(150, 1000, value=150, step=1, label='Number of steps for the invresion')
+                        t_num_inversion_steps = gr.Slider(200, 1000, value=200, step=1, label='Number of steps for the invresion')
                     with gr.Row():
                         t_button_gen_result = gr.Button("Generate Result", variant='primary')
                         # t_button_gen_video = gr.Button("Generate Video", variant='primary')
