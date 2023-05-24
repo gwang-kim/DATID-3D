@@ -52,7 +52,7 @@ Text-guided domain adaptation methods have shown impressive performance on conve
 ### Gradio Demo
 - We provide a interactive Gradio app demo.
 ```.bash
-python gradio_app.py
+python datid3d_gradio_app.py
 ```
 <p align="center">
   <img src="assets/datid3d_gradio.gif" />
