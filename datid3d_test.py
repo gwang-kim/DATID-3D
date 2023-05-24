@@ -28,6 +28,8 @@ parser.add_argument('--shape_format',  type=str, choices=['.mrc', '.ply'], defau
 parser.add_argument('--shape_only_first', type=bool, default=False)
 # Sample pose-controlled videos
 parser.add_argument('--grid', default='1x1')
+parser.add_argument('--w_frames', type=int, default=120)
+
 
 
 args = parser.parse_args()
@@ -78,7 +80,8 @@ if args.mode == 'video':
     --outdir={opj('..', video_path)} \
     --shapes=False \
     --trunc={args.trunc} \
-    --grid={args.grid}
+    --grid={args.grid} \
+    --w-frames={args.w_frames}
     """
     print(f"{command} \n")
     os.system(command)
@@ -183,7 +186,8 @@ if args.mode == 'manip':
         --outdir={opj('..', manip_path)} \
         --shapes=False \
         --trunc={args.trunc} \
-        --grid=1x1 
+        --grid=1x1 \
+        --w-frames={args.w_frames} 
         """
         print(f"{command} \n")
         os.system(command)
