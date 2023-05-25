@@ -147,8 +147,9 @@ def TextGuidedImageTo3D(intermediate, img, model_name, num_inversion_steps, trun
           --network finetuned/{model_ckpts[model_name]} \
           --num_inv_steps={num_inversion_steps} \
           --down_src_eg3d_from_nvidia=0 \
-          --name_tag='_{intermediate.input_img_time}' \
-          --shape=False"""
+          --name_tag='_gradio_{intermediate.input_img_time}' \
+          --shape=False
+          --w_frames 60"""
             print(command)
             os.system(command)
 
