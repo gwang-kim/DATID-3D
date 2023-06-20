@@ -2,11 +2,10 @@
 
 
 
-[//]: # ([![Open In Spaces]&#40;https://camo.githubusercontent.com/00380c35e60d6b04be65d3d94a58332be5cc93779f630bcdfc18ab9a3a7d3388/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f25463025394625413425393725323048756767696e67253230466163652d5370616365732d626c7565&#41;]&#40;https://huggingface.co/&#41;)
+[![Open In Spaces](https://camo.githubusercontent.com/00380c35e60d6b04be65d3d94a58332be5cc93779f630bcdfc18ab9a3a7d3388/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f25463025394625413425393725323048756767696e67253230466163652d5370616365732d626c7565)](https://huggingface.co/spaces/gwang-kim/DATID-3D)
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1e9NSVB7x_hjz-nr4K0jO4rfTXILnNGtA?usp=sharing) 
 [![project_page](https://img.shields.io/badge/-project%20page-green)](https://gwang-kim.github.io/datid_3d/) [![arXiv](https://img.shields.io/badge/arXiv-2211.16374-red)](https://arxiv.org/abs/2211.16374) 
  
-
 [//]: # ()
 [//]: # ([![arXiv]&#40;https://img.shields.io/badge/paper-cvpr2022-cyan&#41;]&#40;https://openaccess.thecvf.com/content/CVPR2022/html/Kim_DiffusionCLIP_Text-Guided_Diffusion_Models_for_Robust_Image_Manipulation_CVPR_2022_paper.html&#41; [![arXiv]&#40;https://img.shields.io/badge/arXiv-2110.02711-red&#41;]&#40;https://arxiv.org/abs/2110.02711&#41;)
 
@@ -31,6 +30,8 @@ Text-guided domain adaptation methods have shown impressive performance on conve
 ## Recent Updates
 - `2023.03.31`: Code & Colab demo are released.
 - `2023.04.03`: Gradio demo is released. 
+- `2023.06.20`: Huggingface demo is now available at [![Open In Spaces](https://camo.githubusercontent.com/00380c35e60d6b04be65d3d94a58332be5cc93779f630bcdfc18ab9a3a7d3388/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f25463025394625413425393725323048756767696e67253230466163652d5370616365732d626c7565)](https://huggingface.co/spaces/gwang-kim/DATID-3D).
+
 
 
 ## Requirements
@@ -49,7 +50,7 @@ Text-guided domain adaptation methods have shown impressive performance on conve
 * We use the pretrained [EG3D](https://github.com/NVlabs/eg3d) models as our pretrained 3D generative models. The prtrained EG3D models will be downloaded automatically for convinence. Or you can download the pretrained [EG3D models](https://catalog.ngc.nvidia.com/orgs/nvidia/teams/research/models/eg3d/files), put `afhqcats512-128.pkl` and `affhqrebalanced512-128.pkl` in `~/eg3d/pretrained/`.
 
 ## Demo
-### Gradio Demo
+### Gradio Demo [![Open In Spaces](https://camo.githubusercontent.com/00380c35e60d6b04be65d3d94a58332be5cc93779f630bcdfc18ab9a3a7d3388/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f25463025394625413425393725323048756767696e67253230466163652d5370616365732d626c7565)](https://huggingface.co/spaces/gwang-kim/DATID-3D)
 - We provide a interactive Gradio app demo.
 ```.bash
 python datid3d_gradio_app.py
